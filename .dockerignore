@@ -1,0 +1,24 @@
+# Exclude Gradle build files and directories
+#.gradle
+#build/
+
+# Exclude Maven build files and directories
+#target/
+#.mvn/
+
+# Exclude IDE-specific files and directories
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Exclude source control files
+.git/
+.gitignore
+
+# Exclude temporary files
+*.tmp
+
+# Exclude logs and other generated files
+logs/
+*.log
