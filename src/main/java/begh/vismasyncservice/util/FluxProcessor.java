@@ -20,6 +20,7 @@ public class FluxProcessor<T> {
             DatabaseWriter<T> databaseWriter) {
 
         Instant start = Instant.now();
+        databaseWriter.start();
         return fetchPage(startPage, limit, endPoint)
                 .expand(response -> response.getMeta().getCurrentPage() < response.getMeta().getTotalNumberOfPages()
                         ? Mono.delay(Duration.ofMillis(1000 / callsPerSecond))
@@ -29,7 +30,7 @@ public class FluxProcessor<T> {
                         .flatMap(databaseWriter::write)
                         .onErrorResume(e -> databaseWriter.pageError(response.getMeta().getCurrentPage(), e.getMessage())))
                 .then()
-                .then(databaseWriter.lastComplete(Duration.between(start, Instant.now()).toSeconds()));
+                .then(databaseWriter.complete(Duration.between(start, Instant.now()).toSeconds()));
     }
 
     private Mono<MetaData<T>> fetchPage(int page, int limit, String endPoint) {
