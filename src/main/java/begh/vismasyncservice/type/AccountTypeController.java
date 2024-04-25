@@ -19,7 +19,7 @@ public class AccountTypeController {
     private final VismaTokenService tokenService;
     @GetMapping("/sync")
     public ResponseEntity<String> syncAccount(
-            @RequestParam(required = false, defaultValue = "0") Integer startPage,
+            @RequestParam(required = false, defaultValue = "1") Integer startPage,
             @RequestParam(required = false, defaultValue = "15") Integer limit,
             @RequestParam(required = false, defaultValue = "10") Integer callsPerSecond
     ) {

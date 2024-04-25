@@ -39,6 +39,8 @@ public class AccountTypeService {
             int fetchedCount = pageData.getData().size();
             int countDifference = fetchedCount - dbCount;
 
+
+
             return SyncDTO.builder()
                     .syncNeeded(countDifference != 0)
                     .countDifference(Math.abs(countDifference))

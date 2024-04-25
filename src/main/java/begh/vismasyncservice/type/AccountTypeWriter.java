@@ -110,7 +110,7 @@ public class AccountTypeWriter implements DatabaseWriter<AccountTypeDTO> {
     }
 
     public Mono<Integer> getDatabaseCount() {
-        String query = "SELECT COUNT(*) FROM data_type";
+        String query = "SELECT COUNT(*) FROM account_type";
         return r2dbcEntityTemplate.getDatabaseClient()
                 .sql(query)
                 .map((row) -> row.get(0, Integer.class))
