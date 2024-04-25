@@ -3,10 +3,12 @@ package begh.vismasyncservice.util;
 import begh.vismasyncservice.visma.MetaData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.ResolvableType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.lang.reflect.Type;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -15,16 +17,16 @@ import java.time.Instant;
 @Component
 public class FluxProcessor<T> {
     private final WebClient webClient;
-    public Mono<Void> fetchDataAndStore(
+    public Mono<Void> fetchDataAndStore(Class<T> typeClass,
             int startPage, int limit, String endPoint, int callsPerSecond,
-            DatabaseWriter<T> databaseWriter) {
+            String accessToken, DatabaseWriter<T> databaseWriter) {
 
         Instant start = Instant.now();
-        databaseWriter.start();
-        return fetchPage(startPage, limit, endPoint)
+        databaseWriter.start().subscribe();
+        return fetchPage(typeClass, startPage, limit, endPoint, accessToken)
                 .expand(response -> response.getMeta().getCurrentPage() < response.getMeta().getTotalNumberOfPages()
                         ? Mono.delay(Duration.ofMillis(1000 / callsPerSecond))
-                        .then(fetchPage(response.getMeta().getCurrentPage() + 1, limit, endPoint))
+                        .then(fetchPage(typeClass, response.getMeta().getCurrentPage() + 1, limit, endPoint, accessToken))
                         : Mono.empty())
                 .flatMap(response -> Flux.fromIterable(response.getData())
                         .flatMap(databaseWriter::write)
@@ -33,11 +35,18 @@ public class FluxProcessor<T> {
                 .then(databaseWriter.complete(Duration.between(start, Instant.now()).toSeconds()));
     }
 
-    private Mono<MetaData<T>> fetchPage(int page, int limit, String endPoint) {
-        String url = String.format("https://api.example.com%s?page=%d&pagesize=%d", endPoint, page, limit);
+    public <T> Mono<MetaData<T>> fetchPage(Class<T> typeClass, int page, int limit, String endPoint, String accessToken) {
+        String url = String.format("https://eaccountingapi-sandbox.test.vismaonline.com%s?page=%d&pagesize=%d", endPoint, page, limit);
         return webClient.get()
                 .uri(url)
+                .header("Authorization", "Bearer " + accessToken)
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<>() {});
+                .bodyToMono(new ParameterizedTypeReference<MetaData<T>>() {
+                    @Override
+                    public Type getType() {
+                        return ResolvableType.forClassWithGenerics(MetaData.class, ResolvableType.forClass(typeClass)).getType();
+                    }
+                })
+                .onErrorResume(e -> Mono.just(new MetaData<>()));
     }
 }

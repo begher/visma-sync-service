@@ -9,6 +9,7 @@ import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 
 public class R2dbcConfig extends AbstractR2dbcConfiguration {
+
     @Value("${spring.r2dbc.url}")
     private String url;
 
