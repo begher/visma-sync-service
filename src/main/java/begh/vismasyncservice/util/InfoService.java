@@ -5,6 +5,7 @@ import begh.vismasyncservice.models.DataType;
 import begh.vismasyncservice.models.ErrorPageDTO;
 import begh.vismasyncservice.models.StartDTO;
 import begh.vismasyncservice.models.dto.InfoDTO;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import reactor.core.publisher.Mono;
 
@@ -19,6 +20,72 @@ public class InfoService{
     public InfoService(R2dbcEntityTemplate r2dbcEntityTemplate, DataType dataType) {
         this.r2dbcEntityTemplate = r2dbcEntityTemplate;
         this.dataType = dataType;
+    }
+
+    public Mono<Void> complete(Long totalOfSeconds) {
+        String sqlFindId = "SELECT id FROM data_type WHERE type = :type";
+        return r2dbcEntityTemplate.getDatabaseClient()
+                .sql(sqlFindId)
+                .bind("type", dataType.toString())
+                .map(row -> row.get("id", Integer.class))
+                .first()
+                .flatMap(dataTypeId -> {
+                    String sqlInsertError = "INSERT INTO completed (duration, data_type_id, created_at) VALUES (:duration, :data_type_id, NOW())";
+                    return r2dbcEntityTemplate.getDatabaseClient()
+                            .sql(sqlInsertError)
+                            .bind("duration", totalOfSeconds)
+                            .bind("data_type_id", dataTypeId)
+                            .then();
+                });
+    }
+
+    public Mono<Void> start() {
+        return insertDataTypeIfNotExists()
+                .then(insertStart())
+                .onErrorResume(DuplicateKeyException.class, e -> Mono.empty())
+                .then();
+    }
+
+    private Mono<Void> insertDataTypeIfNotExists() {
+        String sqlInsert = "INSERT INTO data_type (type) VALUES (:type) ON CONFLICT (type) DO NOTHING";
+        return r2dbcEntityTemplate.getDatabaseClient()
+                .sql(sqlInsert)
+                .bind("type", dataType.toString())
+                .then();
+    }
+
+    private Mono<Object> insertStart() {
+        return r2dbcEntityTemplate.getDatabaseClient()
+                .sql("SELECT id FROM data_type WHERE type = :type")
+                .bind("type", dataType.toString())
+                .map(row -> row.get("id", Integer.class))
+                .first()
+                .flatMap(dataTypeId -> {
+                    String sqlInsertError = "INSERT INTO start (message, data_type_id, created_at) VALUES (:message, :data_type_id, NOW())";
+                    return r2dbcEntityTemplate.getDatabaseClient()
+                            .sql(sqlInsertError)
+                            .bind("message", "message")
+                            .bind("data_type_id", dataTypeId)
+                            .then();
+                });
+    }
+
+    public Mono<Void> pageError(int page, String message) {
+        String sqlFindId = "SELECT id FROM data_type WHERE type = :type";
+        return r2dbcEntityTemplate.getDatabaseClient()
+                .sql(sqlFindId)
+                .bind("type", dataType.toString())
+                .map(row -> row.get("id", Integer.class))
+                .first()
+                .flatMap(dataTypeId -> {
+                    String sqlInsertError = "INSERT INTO page_error (message, data_type_id, created_at, page) VALUES (:message, :data_type_id, NOW(), :page)";
+                    return r2dbcEntityTemplate.getDatabaseClient()
+                            .sql(sqlInsertError)
+                            .bind("message", message)
+                            .bind("data_type_id", dataTypeId)
+                            .bind("page", page)
+                            .then();
+                });
     }
 
     public Mono<InfoDTO> collectInfo() {

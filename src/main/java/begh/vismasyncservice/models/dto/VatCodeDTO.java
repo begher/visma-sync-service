@@ -8,7 +8,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class VatCode {
+public class VatCodeDTO {
     @JsonProperty("Id")
     String id;
     @JsonProperty("Code")

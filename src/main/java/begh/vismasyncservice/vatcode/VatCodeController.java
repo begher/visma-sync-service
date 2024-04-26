@@ -1,9 +1,9 @@
-package begh.vismasyncservice.type;
+package begh.vismasyncservice.vatcode;
 
+import begh.vismasyncservice.fiscalyear.FiscalYearService;
 import begh.vismasyncservice.models.dto.InfoDTO;
 import begh.vismasyncservice.models.dto.SyncDTO;
-import begh.vismasyncservice.visma.TokenDTO;
-import begh.vismasyncservice.visma.VismaTokenService;
+import begh.vismasyncservice.type.AccountTypeWriter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,17 +12,17 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin
-@RequestMapping("/accounttype")
-public class AccountTypeController {
+@RequestMapping("/vatcode")
+public class VatCodeController {
 
-    private final AccountTypeService service;
+    private final VatCodeService service;
     @GetMapping("/sync")
     public ResponseEntity<String> syncAccount(
             @RequestParam(required = false, defaultValue = "1") Integer startPage,
             @RequestParam(required = false, defaultValue = "15") Integer limit,
             @RequestParam(required = false, defaultValue = "10") Integer callsPerSecond
     ) {
-        service.syncAccount(startPage, limit, callsPerSecond).subscribe();
+        service.syncVatCode(startPage, limit, callsPerSecond).subscribe();
         return ResponseEntity.ok("Started");
     }
 

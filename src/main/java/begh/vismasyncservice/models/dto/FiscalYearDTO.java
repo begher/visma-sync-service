@@ -8,7 +8,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class FiscalYear {
+public class FiscalYearDTO {
     @JsonProperty("Id")
     String id;
 

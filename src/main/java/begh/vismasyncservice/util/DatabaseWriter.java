@@ -9,4 +9,5 @@ public interface DatabaseWriter<T> {
     Mono<Void> complete(Long totalOfSeconds);
     Mono<Void> start();
     Mono<InfoDTO> info();
+    Mono<Integer> getDatabaseCount();
 }
