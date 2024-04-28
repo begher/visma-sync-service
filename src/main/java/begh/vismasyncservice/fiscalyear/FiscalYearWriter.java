@@ -24,7 +24,8 @@ public class FiscalYearWriter implements DatabaseWriter<FiscalYearDTO> {
     }
     @Override
     public Mono<Void> write(FiscalYearDTO dto) {
-        String sqlInsert = "INSERT INTO fiscal_year (id, start_date, end_date, is_locked_for_accounting) VALUES (:id, :start_date, :end_date, :is_locked_for_accounting) ON CONFLICT (type) DO NOTHING";
+        String sqlInsert = "INSERT INTO fiscal_year (id, start_date, end_date, is_locked_for_accounting)" +
+                "VALUES (:id, :start_date, :end_date, :is_locked_for_accounting) ON CONFLICT (id) DO NOTHING";
         return r2dbcEntityTemplate.getDatabaseClient()
                 .sql(sqlInsert)
                 .bind("id", dto.getId())

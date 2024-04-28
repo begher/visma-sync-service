@@ -1,8 +1,8 @@
-package begh.vismasyncservice.vatcode;
+package begh.vismasyncservice.accountbalance;
 
 import begh.vismasyncservice.models.DataType;
+import begh.vismasyncservice.models.dto.AccountBalanceDTO;
 import begh.vismasyncservice.models.dto.InfoDTO;
-import begh.vismasyncservice.models.dto.VatCodeDTO;
 import begh.vismasyncservice.util.DatabaseWriter;
 import begh.vismasyncservice.util.InfoService;
 import jakarta.annotation.PostConstruct;
@@ -12,10 +12,9 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 @Component
 @RequiredArgsConstructor
-public class VatCodeWriter implements DatabaseWriter<VatCodeDTO> {
-
+public class AccountBalanceWriter implements DatabaseWriter<AccountBalanceDTO> {
     private final R2dbcEntityTemplate r2dbcEntityTemplate;
-    private final DataType dataType = DataType.VAT_CODE;
+    private final DataType dataType = DataType.ACCOUNT_BALANCE;
     private InfoService infoService;
 
     @PostConstruct
@@ -23,15 +22,14 @@ public class VatCodeWriter implements DatabaseWriter<VatCodeDTO> {
         infoService = new InfoService(r2dbcEntityTemplate, dataType);
     }
     @Override
-    public Mono<Void> write(VatCodeDTO dto) {
-        String sqlInsert = "INSERT INTO vat_code (id, code, description, vat_rate)" +
-                "VALUES (:id, :code, :description, :vat_rate) ON CONFLICT (id) DO NOTHING";
+    public Mono<Void> write(AccountBalanceDTO dto) {
+        String sqlInsert = "INSERT INTO account_balances (account_number, balance, type_id)" +
+                "VALUES (:account_number, :balance, :type_id) ON CONFLICT (account_number) DO NOTHING";
         return r2dbcEntityTemplate.getDatabaseClient()
                 .sql(sqlInsert)
-                .bind("id", dto.getId())
-                .bind("code", dto.getCode())
-                .bind("description", dto.getDescription())
-                .bind("vat_rate", dto.getVatRate())
+                .bind("account_number", dto.getAccountNumber())
+                .bind("balance", dto.getBalance())
+                .bind("type_id", dto.getAccountType())
                 .then();
     }
 
@@ -55,9 +53,8 @@ public class VatCodeWriter implements DatabaseWriter<VatCodeDTO> {
         return infoService.collectInfo();
     }
 
-    @Override
     public Mono<Integer> getDatabaseCount() {
-        String query = "SELECT COUNT(*) FROM vat_code";
+        String query = "SELECT COUNT(*) FROM account_balances";
         return r2dbcEntityTemplate.getDatabaseClient()
                 .sql(query)
                 .map((row) -> row.get(0, Integer.class))

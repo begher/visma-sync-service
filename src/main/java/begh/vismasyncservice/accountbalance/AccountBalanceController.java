@@ -1,5 +1,6 @@
-package begh.vismasyncservice.type;
+package begh.vismasyncservice.accountbalance;
 
+import begh.vismasyncservice.account.AccountService;
 import begh.vismasyncservice.models.dto.InfoDTO;
 import begh.vismasyncservice.models.dto.SyncDTO;
 import lombok.RequiredArgsConstructor;
@@ -10,17 +11,16 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin
-@RequestMapping("/accounttype")
-public class AccountTypeController {
-
-    private final AccountTypeService service;
+@RequestMapping("/accountbalance")
+public class AccountBalanceController {
+    private final AccountBalanceService service;
     @GetMapping("/sync")
     public ResponseEntity<String> syncAccount(
             @RequestParam(required = false, defaultValue = "1") Integer startPage,
             @RequestParam(required = false, defaultValue = "15") Integer limit,
             @RequestParam(required = false, defaultValue = "10") Integer callsPerSecond
     ) {
-        service.syncAccountType(startPage, limit, callsPerSecond).subscribe();
+        service.syncAccountBalance(startPage, limit, callsPerSecond).subscribe();
         return ResponseEntity.ok("Started");
     }
 

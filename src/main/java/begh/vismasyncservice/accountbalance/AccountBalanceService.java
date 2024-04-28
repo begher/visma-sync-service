@@ -1,6 +1,7 @@
-package begh.vismasyncservice.type;
+package begh.vismasyncservice.accountbalance;
 
-import begh.vismasyncservice.models.dto.AccountTypeDTO;
+import begh.vismasyncservice.models.dto.AccountBalanceDTO;
+import begh.vismasyncservice.models.dto.AccountDTO;
 import begh.vismasyncservice.models.dto.InfoDTO;
 import begh.vismasyncservice.models.dto.SyncDTO;
 import begh.vismasyncservice.util.FluxProcessor;
@@ -10,19 +11,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @Service
 @RequiredArgsConstructor
-public class AccountTypeService {
-
+public class AccountBalanceService {
     private final VismaTokenService tokenService;
-    private final FluxProcessor<AccountTypeDTO> fluxProcessor;
-    private final AccountTypeWriter writer;
+    private final FluxProcessor<AccountBalanceDTO> fluxProcessor;
+    private final AccountBalanceWriter writer;
 
-    private final String endpoint = "/v2/accountTypes";
+    private final String endpoint = "/v2/accountbalances/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-    public Mono<Void> syncAccountType(int startPage, int limit, int callsPerSecond) {
+    public Mono<Void> syncAccountBalance(Integer startPage, Integer limit, Integer callsPerSecond) {
         return fluxProcessor.fetchDataAndStore(
-                AccountTypeDTO.class,
+                AccountBalanceDTO.class,
                 startPage, limit,
                 endpoint,
                 callsPerSecond,
@@ -30,19 +33,17 @@ public class AccountTypeService {
                 writer
         );
     }
-
     public Mono<InfoDTO> getInfo(){
         return writer.info();
     }
 
-    public Mono<SyncDTO> checkIfSyncIsNeeded(int page, int limit){
-        Mono<MetaData<AccountTypeDTO>> fetchedPage = fluxProcessor.fetchPage(AccountTypeDTO.class, page, limit, endpoint, tokenService.getToken().getAccessToken());
+    public Mono<SyncDTO> checkIfSyncIsNeeded(int page, int limit) {
+        Mono<MetaData<AccountDTO>> fetchedPage = fluxProcessor.fetchPage(AccountDTO.class, page, limit, endpoint, tokenService.getToken().getAccessToken());
         Mono<Integer> databaseCount = writer.getDatabaseCount();
 
         return Mono.zip(fetchedPage, databaseCount, (pageData, dbCount) -> {
             int fetchedCount = pageData.getData().size();
             int countDifference = fetchedCount - dbCount;
-
 
 
             return SyncDTO.builder()

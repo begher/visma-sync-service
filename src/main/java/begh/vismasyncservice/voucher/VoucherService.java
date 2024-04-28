@@ -1,8 +1,9 @@
-package begh.vismasyncservice.type;
+package begh.vismasyncservice.voucher;
 
-import begh.vismasyncservice.models.dto.AccountTypeDTO;
 import begh.vismasyncservice.models.dto.InfoDTO;
 import begh.vismasyncservice.models.dto.SyncDTO;
+import begh.vismasyncservice.models.dto.VatCodeDTO;
+import begh.vismasyncservice.models.dto.VoucherDTO;
 import begh.vismasyncservice.util.FluxProcessor;
 import begh.vismasyncservice.visma.MetaData;
 import begh.vismasyncservice.visma.VismaTokenService;
@@ -12,17 +13,15 @@ import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-public class AccountTypeService {
-
+public class VoucherService {
+    private final FluxProcessor<VoucherDTO> fluxProcessor;
+    private final VoucherWriter writer;
     private final VismaTokenService tokenService;
-    private final FluxProcessor<AccountTypeDTO> fluxProcessor;
-    private final AccountTypeWriter writer;
+    private final String endpoint = "/v2/vouchers";
 
-    private final String endpoint = "/v2/accountTypes";
-
-    public Mono<Void> syncAccountType(int startPage, int limit, int callsPerSecond) {
+    public Mono<Void> syncVouchers(Integer startPage, Integer limit, Integer callsPerSecond) {
         return fluxProcessor.fetchDataAndStore(
-                AccountTypeDTO.class,
+                VoucherDTO.class,
                 startPage, limit,
                 endpoint,
                 callsPerSecond,
@@ -30,20 +29,17 @@ public class AccountTypeService {
                 writer
         );
     }
-
-    public Mono<InfoDTO> getInfo(){
+    public Mono<InfoDTO> getInfo() {
         return writer.info();
     }
 
-    public Mono<SyncDTO> checkIfSyncIsNeeded(int page, int limit){
-        Mono<MetaData<AccountTypeDTO>> fetchedPage = fluxProcessor.fetchPage(AccountTypeDTO.class, page, limit, endpoint, tokenService.getToken().getAccessToken());
+    public Mono<SyncDTO> checkIfSyncIsNeeded(int page, int limit) {
+        Mono<MetaData<VoucherDTO>> fetchedPage = fluxProcessor.fetchPage(VoucherDTO.class, page, limit, endpoint, tokenService.getToken().getAccessToken());
         Mono<Integer> databaseCount = writer.getDatabaseCount();
 
         return Mono.zip(fetchedPage, databaseCount, (pageData, dbCount) -> {
             int fetchedCount = pageData.getData().size();
             int countDifference = fetchedCount - dbCount;
-
-
 
             return SyncDTO.builder()
                     .syncNeeded(countDifference != 0)
