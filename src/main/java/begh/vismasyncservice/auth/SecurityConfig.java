@@ -25,8 +25,8 @@ public class SecurityConfig {
                 .addFilterBefore(new FirebaseTokenFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth ->{
                     auth
-                            .anyRequest().permitAll();
-//                            .requestMatchers("/public/**").permitAll()
+                            .requestMatchers("/**").permitAll();
+//                            .requestMatchers("/public/**", "/health").permitAll()
 //                            .anyRequest().authenticated();
                 })
                 .build();
