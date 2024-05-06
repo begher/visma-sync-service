@@ -17,10 +17,9 @@ public class AccountBalanceController {
     @GetMapping("/sync")
     public ResponseEntity<String> syncAccount(
             @RequestParam(required = false, defaultValue = "1") Integer startPage,
-            @RequestParam(required = false, defaultValue = "15") Integer limit,
-            @RequestParam(required = false, defaultValue = "10") Integer callsPerSecond
+            @RequestParam(required = false, defaultValue = "50") Integer limit
     ) {
-        service.syncAccountBalance(startPage, limit, callsPerSecond).subscribe();
+        service.syncAccountBalance(startPage, limit).subscribe();
         return ResponseEntity.ok("Started");
     }
 

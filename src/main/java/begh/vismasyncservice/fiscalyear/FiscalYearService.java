@@ -18,12 +18,11 @@ public class FiscalYearService {
     private final VismaTokenService tokenService;
     private final String endpoint = "/v2/fiscalyears";
 
-    public Mono<Void> syncFiscalYear(Integer startPage, Integer limit, Integer callsPerSecond) {
+    public Mono<Void> syncFiscalYear(Integer startPage, Integer limit) {
         return fluxProcessor.fetchDataAndStore(
                 FiscalYearDTO.class,
                 startPage, limit,
                 endpoint,
-                callsPerSecond,
                 tokenService.getToken().getAccessToken(),
                 writer
         );
@@ -38,7 +37,7 @@ public class FiscalYearService {
         Mono<Integer> databaseCount = writer.getDatabaseCount();
 
         return Mono.zip(fetchedPage, databaseCount, (pageData, dbCount) -> {
-            int fetchedCount = pageData.getData().size();
+            int fetchedCount = pageData.getMeta().getTotalNumberOfResults();
             int countDifference = fetchedCount - dbCount;
 
 

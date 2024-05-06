@@ -3,6 +3,9 @@ package begh.vismasyncservice.models.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.util.Date;
+import java.util.UUID;
+
 @Builder
 @Getter
 @Setter
@@ -10,17 +13,13 @@ import lombok.*;
 @NoArgsConstructor
 public class FiscalYearDTO {
     @JsonProperty("Id")
-    String id;
-
+    UUID id;
     @JsonProperty("StartDate")
-    String startDate;
-
+    Date startDate;
     @JsonProperty("EndDate")
-    String endDate;
-
+    Date endDate;
     @JsonProperty("IsLockedForAccounting")
     boolean isLockedForAccounting;
-
     @JsonProperty("BookkeepingMethod")
     int bookkeepingMethod;
 }

@@ -3,6 +3,8 @@ package begh.vismasyncservice.models.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.util.UUID;
+
 @Builder
 @Getter
 @Setter
@@ -10,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 public class VatCodeDTO {
     @JsonProperty("Id")
-    String id;
+    UUID id;
     @JsonProperty("Code")
     String code;
     @JsonProperty("Description")

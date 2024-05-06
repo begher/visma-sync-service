@@ -1,7 +1,5 @@
 package begh.vismasyncservice.vatcode;
 
-import begh.vismasyncservice.fiscalyear.FiscalYearWriter;
-import begh.vismasyncservice.models.dto.FiscalYearDTO;
 import begh.vismasyncservice.models.dto.InfoDTO;
 import begh.vismasyncservice.models.dto.SyncDTO;
 import begh.vismasyncservice.models.dto.VatCodeDTO;
@@ -20,12 +18,11 @@ public class VatCodeService {
     private final VismaTokenService tokenService;
     private final String endpoint = "/v2/vatcodes";
 
-    public Mono<Void> syncVatCode(Integer startPage, Integer limit, Integer callsPerSecond) {
+    public Mono<Void> syncVatCode(Integer startPage, Integer limit) {
         return fluxProcessor.fetchDataAndStore(
                 VatCodeDTO.class,
                 startPage, limit,
                 endpoint,
-                callsPerSecond,
                 tokenService.getToken().getAccessToken(),
                 writer
         );
@@ -40,7 +37,7 @@ public class VatCodeService {
         Mono<Integer> databaseCount = writer.getDatabaseCount();
 
         return Mono.zip(fetchedPage, databaseCount, (pageData, dbCount) -> {
-            int fetchedCount = pageData.getData().size();
+            int fetchedCount = pageData.getMeta().getTotalNumberOfResults();;
             int countDifference = fetchedCount - dbCount;
 
             return SyncDTO.builder()

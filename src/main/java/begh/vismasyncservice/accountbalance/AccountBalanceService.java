@@ -23,12 +23,11 @@ public class AccountBalanceService {
 
     private final String endpoint = "/v2/accountbalances/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-    public Mono<Void> syncAccountBalance(Integer startPage, Integer limit, Integer callsPerSecond) {
+    public Mono<Void> syncAccountBalance(Integer startPage, Integer limit) {
         return fluxProcessor.fetchDataAndStore(
                 AccountBalanceDTO.class,
                 startPage, limit,
                 endpoint,
-                callsPerSecond,
                 tokenService.getToken().getAccessToken(),
                 writer
         );
@@ -42,7 +41,7 @@ public class AccountBalanceService {
         Mono<Integer> databaseCount = writer.getDatabaseCount();
 
         return Mono.zip(fetchedPage, databaseCount, (pageData, dbCount) -> {
-            int fetchedCount = pageData.getData().size();
+            int fetchedCount = pageData.getMeta().getTotalNumberOfResults();
             int countDifference = fetchedCount - dbCount;
 
 

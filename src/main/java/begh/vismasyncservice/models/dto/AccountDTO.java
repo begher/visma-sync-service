@@ -3,6 +3,9 @@ package begh.vismasyncservice.models.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.util.Date;
+import java.util.UUID;
+
 @Builder
 @Getter
 @Setter
@@ -12,13 +15,13 @@ public class AccountDTO {
     @JsonProperty("Name")
     String name;
     @JsonProperty("Number")
-    String number;
+    int number;
     @JsonProperty("VatCodeId")
-    String vatCodeId;
+    UUID vatCodeId;
     @JsonProperty("VatCodeDescription")
     String vatCodeDescription;
     @JsonProperty("FiscalYearId")
-    String fiscalYearId;
+    UUID fiscalYearId;
     @JsonProperty("ReferenceCode")
     String referenceCode;
     @JsonProperty("Type")
@@ -26,9 +29,9 @@ public class AccountDTO {
     @JsonProperty("TypeDescription")
     String typeDescription;
     @JsonProperty("ModifiedUtc")
-    String modifiedUtc;
+    Date modifiedUtc;
     @JsonProperty("CreatedUtc")
-    String createdUtc;
+    Date createdUtc;
     @JsonProperty("IsActive")
     boolean isActive;
     @JsonProperty("IsProjectAllowed")

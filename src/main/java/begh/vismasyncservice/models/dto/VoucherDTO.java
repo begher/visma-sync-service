@@ -3,7 +3,9 @@ package begh.vismasyncservice.models.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Builder
 @Getter
@@ -12,9 +14,9 @@ import java.util.List;
 @NoArgsConstructor
 public class VoucherDTO {
     @JsonProperty("Id")
-    String id;
+    UUID id;
     @JsonProperty("VoucherDate")
-    String voucherDate;
+    Date voucherDate;
     @JsonProperty("VoucherText")
     String voucherText;
     @JsonProperty("Rows")

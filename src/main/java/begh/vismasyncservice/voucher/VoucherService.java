@@ -2,7 +2,6 @@ package begh.vismasyncservice.voucher;
 
 import begh.vismasyncservice.models.dto.InfoDTO;
 import begh.vismasyncservice.models.dto.SyncDTO;
-import begh.vismasyncservice.models.dto.VatCodeDTO;
 import begh.vismasyncservice.models.dto.VoucherDTO;
 import begh.vismasyncservice.util.FluxProcessor;
 import begh.vismasyncservice.visma.MetaData;
@@ -19,12 +18,11 @@ public class VoucherService {
     private final VismaTokenService tokenService;
     private final String endpoint = "/v2/vouchers";
 
-    public Mono<Void> syncVouchers(Integer startPage, Integer limit, Integer callsPerSecond) {
+    public Mono<Void> syncVouchers(Integer startPage, Integer limit) {
         return fluxProcessor.fetchDataAndStore(
                 VoucherDTO.class,
                 startPage, limit,
                 endpoint,
-                callsPerSecond,
                 tokenService.getToken().getAccessToken(),
                 writer
         );
@@ -38,7 +36,7 @@ public class VoucherService {
         Mono<Integer> databaseCount = writer.getDatabaseCount();
 
         return Mono.zip(fetchedPage, databaseCount, (pageData, dbCount) -> {
-            int fetchedCount = pageData.getData().size();
+            int fetchedCount = pageData.getMeta().getTotalNumberOfResults();
             int countDifference = fetchedCount - dbCount;
 
             return SyncDTO.builder()

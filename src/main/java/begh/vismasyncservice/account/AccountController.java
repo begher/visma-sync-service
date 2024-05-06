@@ -16,10 +16,9 @@ public class AccountController {
     @GetMapping("/sync")
     public ResponseEntity<String> syncAccount(
             @RequestParam(required = false, defaultValue = "1") Integer startPage,
-            @RequestParam(required = false, defaultValue = "15") Integer limit,
-            @RequestParam(required = false, defaultValue = "10") Integer callsPerSecond
+            @RequestParam(required = false, defaultValue = "50") Integer limit
     ) {
-        service.syncAccount(startPage, limit, callsPerSecond).subscribe();
+        service.syncAccount(startPage, limit).subscribe();
         return ResponseEntity.ok("Started");
     }
 

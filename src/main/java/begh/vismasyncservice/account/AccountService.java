@@ -19,12 +19,11 @@ public class AccountService {
 
     private final String endpoint = "/v2/accounts";
 
-    public Mono<Void> syncAccount(int startPage, int limit, int callsPerSecond) {
+    public Mono<Void> syncAccount(int startPage, int limit) {
         return fluxProcessor.fetchDataAndStore(
                 AccountDTO.class,
                 startPage, limit,
                 endpoint,
-                callsPerSecond,
                 tokenService.getToken().getAccessToken(),
                 writer
         );
@@ -39,7 +38,7 @@ public class AccountService {
         Mono<Integer> databaseCount = writer.getDatabaseCount();
 
         return Mono.zip(fetchedPage, databaseCount, (pageData, dbCount) -> {
-            int fetchedCount = pageData.getData().size();
+            int fetchedCount = pageData.getMeta().getTotalNumberOfResults();
             int countDifference = fetchedCount - dbCount;
 
             return SyncDTO.builder()

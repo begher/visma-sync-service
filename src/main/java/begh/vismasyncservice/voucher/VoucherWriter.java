@@ -9,9 +9,13 @@ import begh.vismasyncservice.util.InfoService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class VoucherWriter implements DatabaseWriter<VoucherDTO> {
@@ -46,20 +50,26 @@ public class VoucherWriter implements DatabaseWriter<VoucherDTO> {
                 .then();
     }
 
-    private Mono<Void> saveVoucherRow(VoucherRowDTO row, String voucherId) {
+    private Mono<Void> saveVoucherRow(VoucherRowDTO row, UUID voucherId) {
         String sqlRow = "INSERT INTO voucher_row (voucher_id, account_number, account_description, " +
                 "debit_amount, credit_amount, transaction_text)" +
                 "VALUES (:voucher_id, :account_number, :account_description, " +
                 ":debit_amount, :credit_amount, :transaction_text)";
 
-        return r2dbcEntityTemplate.getDatabaseClient() .sql(sqlRow)
+        DatabaseClient.GenericExecuteSpec executeSpec = r2dbcEntityTemplate.getDatabaseClient().sql(sqlRow)
                 .bind("voucher_id", voucherId)
                 .bind("account_number", row.getAccountNumber())
                 .bind("account_description", row.getAccountDescription())
                 .bind("debit_amount", row.getDebitAmount())
-                .bind("credit_amount", row.getCreditAmount())
-                .bind("transaction_text", row.getTransactionText())
-                .then();
+                .bind("credit_amount", row.getCreditAmount());
+
+        if (row.getTransactionText() == null) {
+            executeSpec = executeSpec.bindNull("transaction_text", String.class);
+        } else {
+            executeSpec = executeSpec.bind("transaction_text", row.getTransactionText());
+        }
+
+        return executeSpec.then();
     }
 
     @Override

@@ -18,25 +18,25 @@ import java.time.Instant;
 public class FluxProcessor<T> {
     private final WebClient webClient;
     public Mono<Void> fetchDataAndStore(Class<T> typeClass,
-            int startPage, int limit, String endPoint, int callsPerSecond,
-            String accessToken, DatabaseWriter<T> databaseWriter) {
+                                        int startPage, int limit, String endPoint,
+                                        String accessToken, DatabaseWriter<T> databaseWriter) {
 
         Instant start = Instant.now();
         databaseWriter.start().subscribe();
         return fetchPage(typeClass, startPage, limit, endPoint, accessToken)
                 .expand(response -> response.getMeta().getCurrentPage() < response.getMeta().getTotalNumberOfPages()
-                        ? Mono.delay(Duration.ofMillis(1000 / callsPerSecond))
-                        .then(fetchPage(typeClass, response.getMeta().getCurrentPage() + 1, limit, endPoint, accessToken))
+                        ? fetchPage(typeClass, response.getMeta().getCurrentPage() + 1, limit, endPoint, accessToken)
                         : Mono.empty())
                 .flatMap(response -> Flux.fromIterable(response.getData())
                         .flatMap(databaseWriter::write)
                         .onErrorResume(e -> databaseWriter.pageError(response.getMeta().getCurrentPage(), e.getMessage())))
                 .then()
-                .then(databaseWriter.complete(Duration.between(start, Instant.now()).toSeconds()));
+                .then(Mono.defer(() -> databaseWriter.complete(Duration.between(start, Instant.now()).toSeconds())));
     }
 
     public <T> Mono<MetaData<T>> fetchPage(Class<T> typeClass, int page, int limit, String endPoint, String accessToken) {
-        String url = String.format("https://eaccountingapi-sandbox.test.vismaonline.com%s?page=%d&pagesize=%d", endPoint, page, limit);
+        String url = String.format("https://eaccountingapi-sandbox.test.vismaonline.com%s?$page=%d&$pagesize=%d", endPoint, page, limit);
+        System.out.println(url);
         return webClient.get()
                 .uri(url)
                 .header("Authorization", "Bearer " + accessToken)
