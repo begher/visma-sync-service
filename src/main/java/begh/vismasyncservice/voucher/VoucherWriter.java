@@ -38,16 +38,15 @@ public class VoucherWriter implements DatabaseWriter<VoucherDTO> {
                 .bind("voucher_date", dto.getVoucherDate())
                 .bind("voucher_text", dto.getVoucherText())
                 .fetch().rowsUpdated()
-                .handle((count, sink) -> {
+                .flatMap(count -> {
                     if (count > 0) {
-                        sink.next(count);
+                        return Flux.fromIterable(dto.getRows())
+                                .concatMap(row -> saveVoucherRow(row, dto.getId()))
+                                .then();
                     } else {
-                        sink.complete();
+                        return Mono.empty();
                     }
-                })
-                .thenMany(Flux.fromIterable(dto.getRows()))
-                .concatMap(row -> saveVoucherRow(row, dto.getId()))
-                .then();
+                });
     }
 
     private Mono<Void> saveVoucherRow(VoucherRowDTO row, UUID voucherId) {

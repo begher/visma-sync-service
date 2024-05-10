@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Builder
@@ -13,9 +14,9 @@ import java.util.List;
 @NoArgsConstructor
 public class MetaData<T> {
     @JsonProperty("Meta")
-    Meta meta;
+    private Meta meta;
     @JsonProperty("Data")
-    List<T> data;
+    private List<T> data = new ArrayList<>();
 
     @Builder
     @Getter

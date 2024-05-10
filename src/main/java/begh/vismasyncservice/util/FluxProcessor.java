@@ -36,7 +36,6 @@ public class FluxProcessor<T> {
 
     public <T> Mono<MetaData<T>> fetchPage(Class<T> typeClass, int page, int limit, String endPoint, String accessToken) {
         String url = String.format("https://eaccountingapi-sandbox.test.vismaonline.com%s?$page=%d&$pagesize=%d", endPoint, page, limit);
-        System.out.println(url);
         return webClient.get()
                 .uri(url)
                 .header("Authorization", "Bearer " + accessToken)

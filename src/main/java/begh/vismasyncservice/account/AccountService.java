@@ -34,6 +34,7 @@ public class AccountService {
     }
 
     public Mono<SyncDTO> checkIfSyncIsNeeded(int page, int limit) {
+
         Mono<MetaData<AccountDTO>> fetchedPage = fluxProcessor.fetchPage(AccountDTO.class, page, limit, endpoint, tokenService.getToken().getAccessToken());
         Mono<Integer> databaseCount = writer.getDatabaseCount();
 
