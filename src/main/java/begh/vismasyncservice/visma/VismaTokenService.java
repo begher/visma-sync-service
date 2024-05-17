@@ -30,7 +30,7 @@ public class VismaTokenService {
 
     private TokenDTO fetchNewToken() {
         return webClient.get()
-                .uri("https://api.imats.se/auth-service/tokens")
+                .uri("https://api.imats.se/visma-auth-service/tokens")
                 .retrieve()
                 .bodyToMono(TokenDTO.class)
                 .block();
